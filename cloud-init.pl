@@ -98,19 +98,14 @@ sub cloud_init {
 }
 
 sub action_deploy {
-    #-- rc.local stub
-    open my $fh, ">", "/etc/rc.local";
+    #-- rc.firsttime stub
+    open my $fh, ">>", "/etc/rc.firsttime";
     print $fh <<'EOF';
-if [ -f /etc/cloud.init ]; then
-  path=/usr/local/libdata/cloud-init.pl
-  echo -n "exoscale first boot: "
-  perl $path cloud-init && rm /etc/cloud.init && echo "done."
-fi
+# run cloud-init
+path=/usr/local/libdata/cloud-init.pl
+echo -n "exoscale first boot: "
+perl $path cloud-init && rm /etc/cloud.init && echo "done."
 EOF
-    close $fh;
-
-    #-- first boot file
-    open my $fh, ">", "/etc/cloud.init";
     close $fh;
 
     #-- remove generated keys and seeds
