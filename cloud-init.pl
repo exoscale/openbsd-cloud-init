@@ -104,7 +104,7 @@ sub action_deploy {
 # run cloud-init
 path=/usr/local/libdata/cloud-init.pl
 echo -n "exoscale first boot: "
-perl $path cloud-init && rm /etc/cloud.init && echo "done."
+perl $path cloud-init && echo "done."
 EOF
     close $fh;
 
