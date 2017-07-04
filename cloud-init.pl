@@ -73,6 +73,10 @@ sub apply_user_data {
     printf $fh "127.0.1.1 %s %s\n", $shortname, $data->{fqdn};
     close $fh;
   }
+
+  if (defined($data->{ssh_authorized_keys})) {
+    install_pubkeys join("\n", @{ $data->{ssh_authorized_keys} });
+  }
 }
 
 sub cloud_init {
