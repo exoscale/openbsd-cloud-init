@@ -28,9 +28,9 @@ use File::Temp qw(tempfile);
 
 use strict;
 
-sub get_metadata {
-  my ($host, $type) = @_;
-  my $response = HTTP::Tiny->new->get("http://$host/latest/$type");
+sub get_data {
+  my ($host, $path) = @_;
+  my $response = HTTP::Tiny->new->get("http://$host/latest/$path");
   return unless $response->{success};
   return $response->{content};
 }
@@ -81,9 +81,9 @@ sub apply_user_data {
 
 sub cloud_init {
     my $host = get_host();
-    my $data = get_metadata($host, 'user-data');
+    my $data = get_data($host, 'user-data');
 
-    my $pubkeys = get_metadata($host, 'public-keys');
+    my $pubkeys = get_data($host, 'meta-data/public-keys');
     chomp($pubkeys);
     install_pubkeys $pubkeys;
 

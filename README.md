@@ -85,7 +85,7 @@ directory structure:
 
 ```
 ./cloud-init.pl => this script
-./latest/public-keys => "ssh-rsa ..." (your pubkey)
+./latest/meta-data/public-keys => "ssh-rsa ..." (your pubkey)
 ./latest/user-data => "#cloud-config\nfqdn: some.host.name\nmanage_etc_hosts: true\n"
 ```
 
