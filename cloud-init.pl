@@ -25,6 +25,7 @@ use CPAN::Meta::YAML;
 use HTTP::Tiny;
 use File::Path qw(make_path);
 use File::Temp qw(tempfile);
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 use strict;
 
@@ -81,7 +82,10 @@ sub apply_user_data {
 
 sub cloud_init {
     my $host = get_host();
-    my $data = get_data($host, 'user-data');
+
+    my $compressed = get_data($host, 'user-data');
+    my $data;
+    gunzip \$compressed => \$data;
 
     my $pubkeys = get_data($host, 'meta-data/public-keys');
     chomp($pubkeys);
