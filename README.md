@@ -19,13 +19,14 @@ as possible by default. The following actions are currently supported:
 - Persistent hostname personalization if requested.
 - Local host resolution personalization if requested.
 - Optional custom script execution.
+- Packages installation (pkg_add) support.
+- Custom commands (runcmd) execution.
 
 ## Future improvements
 
 - [ ] Root disk resize
 - [ ] Cloud-init user and group creation support
 - [ ] Cloud-init write-file support
-- [ ] Cloud-init pkg_add configuration support
 - [ ] Cloud-init custom package install support
 - [ ] Cloud-init puppet initialization support
 - [ ] Cloud-init resolv.conf personalization support
