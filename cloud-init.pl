@@ -29,21 +29,15 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 use strict;
 
+use constant {
+    METADATA_SERVER => "169.254.169.254",
+};
+
 sub get_data {
   my ($host, $path) = @_;
   my $response = HTTP::Tiny->new->get("http://$host/latest/$path");
   return unless $response->{success};
   return $response->{content};
-}
-
-sub get_host {
-  open my $fh, "<", "/var/db/dhclient.leases.vio0";
-  my $host;
-  while (<$fh>) {
-    $host = $1 if /dhcp-server-identifier (.*);$/;
-  }
-  close $fh;
-  return $host;
 }
 
 sub install_pubkeys {
@@ -93,7 +87,7 @@ sub apply_user_data {
 }
 
 sub cloud_init {
-    my $host = get_host();
+    my $host = METADATA_HOST;
 
     my $compressed = get_data($host, 'user-data');
     my $data;
