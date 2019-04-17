@@ -78,6 +78,18 @@ sub apply_user_data {
   if (defined($data->{ssh_authorized_keys})) {
     install_pubkeys join("\n", @{ $data->{ssh_authorized_keys} });
   }
+
+  if (defined($data->{packages})) {
+    foreach my $package (@{ $data->{packages} }) {
+      system("pkg_add " . $package);
+    }
+  }
+
+  if (defined($data->{runcmd})) {
+    foreach my $runcmd (@{ $data->{runcmd} }) {
+      system("sh -c \"$runcmd\"");
+    }
+  }
 }
 
 sub cloud_init {
