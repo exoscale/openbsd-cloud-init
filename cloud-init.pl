@@ -30,7 +30,7 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 use strict;
 
 use constant {
-    METADATA_SERVER => "169.254.169.254",
+    METADATA_HOST => "169.254.169.254",
 };
 
 sub get_data {
