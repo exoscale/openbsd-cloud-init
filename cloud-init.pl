@@ -84,6 +84,25 @@ sub apply_user_data {
       system("sh -c \"$runcmd\"");
     }
   }
+
+  if (defined($data->{write_files})) {
+    foreach my $item (@{ $data->{write_files} }) {
+      open my $fh, ">", $item->{path};
+      printf $fh "%s", $item->{content};
+      if (defined($item->{permissions})) {
+        my $perms = oct($item->{permissions});
+        chmod($perms, $fh);
+      }
+      if (defined($item->{owner})) {
+        my ($user_name, $group_name) = split(/\:/, $item->{owner});
+        my $uid = getpwnam $user_name;
+        my $gid = getgrnam $group_name;
+        chown $uid, $gid, $fh;
+      }
+      close $fh;
+      system("sh -c \"$item->{path}\"");
+    }
+  }
 }
 
 sub cloud_init {
