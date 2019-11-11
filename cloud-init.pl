@@ -23,7 +23,8 @@
 
 use CPAN::Meta::YAML;
 use HTTP::Tiny;
-use File::Path qw(make_path);
+use File::Basename;
+use File::Path qw(make_path mkpath);
 use File::Temp qw(tempfile);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
@@ -76,6 +77,25 @@ sub apply_user_data {
   if (defined($data->{packages})) {
     foreach my $package (@{ $data->{packages} }) {
       system("pkg_add " . $package);
+    }
+  }
+
+  if (defined($data->{write_files})) {
+    foreach my $item (@{ $data->{write_files} }) {
+      mkpath [dirname($item->{path})], 0, 0755;
+      open my $fh, ">", $item->{path};
+      print $fh $item->{content};
+      if (defined($item->{permissions})) {
+        my $perms = oct($item->{permissions});
+        chmod($perms, $fh);
+      }
+      if (defined($item->{owner})) {
+        my ($user_name, $group_name) = split(/\:/, $item->{owner});
+        my $uid = getpwnam $user_name;
+        my $gid = getgrnam $group_name;
+        chown $uid, $gid, $fh;
+      }
+      close $fh;
     }
   }
 
