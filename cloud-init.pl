@@ -41,6 +41,15 @@ sub get_data {
   return $response->{content};
 }
 
+sub set_hostname {
+  my $fqdn = shift;
+
+  open my $fh, ">", "/etc/myname";
+  printf $fh "%s\n", $fqdn;
+  close $fh;
+  system("hostname " . $fqdn);
+}
+
 sub install_pubkeys {
   my $pubkeys = shift;
 
@@ -55,10 +64,7 @@ sub apply_user_data {
   my $data = shift;
 
   if (defined($data->{fqdn})) {
-    open my $fh, ">", "/etc/myname";
-    printf $fh "%s\n", $data->{fqdn};
-    close $fh;
-    system("hostname " . $data->{fqdn});
+    set_hostname $data->{fqdn};
   }
 
   if (defined($data->{manage_etc_hosts}) &&
