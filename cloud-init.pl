@@ -41,6 +41,13 @@ sub get_data {
   return $response->{content};
 }
 
+sub get_default_fqdn {
+  my $host = METADATA_HOST;
+
+  my $local_hostname = get_data($host, 'meta-data/local-hostname');
+  return $local_hostname . '.my.domain';
+}
+
 sub set_hostname {
   my $fqdn = shift;
 
@@ -68,11 +75,11 @@ sub apply_user_data {
   }
 
   if (defined($data->{manage_etc_hosts}) &&
-      defined($data->{fqdn}) &&
       $data->{manage_etc_hosts} eq 'true') {
     open my $fh, ">>", "/etc/hosts";
-    my ($shortname) = split(/\./, $data->{fqdn});
-    printf $fh "127.0.1.1 %s %s\n", $shortname, $data->{fqdn};
+    my $fqdn = $data->{fqdn} // get_default_fqdn;
+    my ($shortname) = split(/\./, $fqdn);
+    printf $fh "127.0.1.1 %s %s\n", $shortname, $fqdn;
     close $fh;
   }
 
@@ -122,6 +129,7 @@ sub cloud_init {
     my $pubkeys = get_data($host, 'meta-data/public-keys');
     chomp($pubkeys);
     install_pubkeys $pubkeys;
+    set_hostname get_default_fqdn;
 
     if (defined($data)) {
         if ($data =~ /^#cloud-config/) {
