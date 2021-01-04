@@ -75,7 +75,8 @@ sub apply_user_data {
   }
 
   if (defined($data->{manage_etc_hosts}) &&
-      $data->{manage_etc_hosts} eq 'true') {
+      ($data->{manage_etc_hosts} eq 'true' ||
+       $data->{manage_etc_hosts} eq 'localhost')) {
     open my $fh, ">>", "/etc/hosts";
     my $fqdn = $data->{fqdn} // get_default_fqdn;
     my ($shortname) = split(/\./, $fqdn);
