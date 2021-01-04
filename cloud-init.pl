@@ -80,7 +80,7 @@ sub apply_user_data {
     open my $fh, ">>", "/etc/hosts";
     my $fqdn = $data->{fqdn} // get_default_fqdn;
     my ($shortname) = split(/\./, $fqdn);
-    printf $fh "127.0.1.1 %s %s\n", $shortname, $fqdn;
+    printf $fh "127.0.1.1       %s %s\n", $shortname, $fqdn;
     close $fh;
   }
 
