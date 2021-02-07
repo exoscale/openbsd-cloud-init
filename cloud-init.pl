@@ -125,6 +125,16 @@ sub apply_user_data {
   }
 }
 
+sub run_user_script {
+    my $data = shift;
+
+    my ($fh, $filename) = tempfile("/tmp/cloud-config-XXXXXX");
+    print $fh $data;
+    chmod(0700, $fh);
+    close $fh;
+    system("sh -c \"$filename && rm $filename\"");
+}
+
 sub cloud_init {
     my $host = METADATA_HOST;
 
@@ -143,12 +153,7 @@ sub cloud_init {
         } elsif ($data =~ /^#\!/) {
             set_hostname(get_default_fqdn);
             add_etc_hosts_entry(get_default_fqdn);
-
-            my ($fh, $filename) = tempfile("/tmp/cloud-config-XXXXXX");
-            print $fh $data;
-            chmod(0700, $fh);
-            close $fh;
-            system("sh -c \"$filename && rm $filename\"");
+            run_user_script($data);
         }
     } else {
         set_hostname(get_default_fqdn);
