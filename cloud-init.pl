@@ -57,6 +57,15 @@ sub set_hostname {
   system("hostname " . $fqdn);
 }
 
+sub add_etc_hosts_entry {
+    my $fqdn = shift;
+    my ($shortname) = split(/\./, $fqdn);
+
+    open my $fh, ">>", "/etc/hosts";
+    printf $fh "127.0.1.1       %s %s\n", $shortname, $fqdn;
+    close $fh;
+}
+
 sub install_pubkeys {
   my $pubkeys = shift;
 
@@ -77,11 +86,8 @@ sub apply_user_data {
   if (defined($data->{manage_etc_hosts}) &&
       ($data->{manage_etc_hosts} eq 'true' ||
        $data->{manage_etc_hosts} eq 'localhost')) {
-    open my $fh, ">>", "/etc/hosts";
     my $fqdn = $data->{fqdn} // get_default_fqdn;
-    my ($shortname) = split(/\./, $fqdn);
-    printf $fh "127.0.1.1       %s %s\n", $shortname, $fqdn;
-    close $fh;
+    add_etc_hosts_entry($fqdn);
   }
 
   if (defined($data->{ssh_authorized_keys})) {
