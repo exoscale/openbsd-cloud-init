@@ -79,14 +79,13 @@ sub install_pubkeys {
 sub apply_user_data {
   my $data = shift;
 
-  if (defined($data->{fqdn})) {
-    set_hostname $data->{fqdn};
-  }
+  my $fqdn = $data->{fqdn} // get_default_fqdn;
 
-  if (defined($data->{manage_etc_hosts}) &&
-      ($data->{manage_etc_hosts} eq 'true' ||
-       $data->{manage_etc_hosts} eq 'localhost')) {
-    my $fqdn = $data->{fqdn} // get_default_fqdn;
+  set_hostname($fqdn);
+
+  if (!defined($data->{manage_etc_hosts}) ||
+      $data->{manage_etc_hosts} eq 'true' ||
+      $data->{manage_etc_hosts} eq 'localhost') {
     add_etc_hosts_entry($fqdn);
   }
 
@@ -136,19 +135,24 @@ sub cloud_init {
     my $pubkeys = get_data($host, 'meta-data/public-keys');
     chomp($pubkeys);
     install_pubkeys $pubkeys;
-    set_hostname get_default_fqdn;
 
     if (defined($data)) {
         if ($data =~ /^#cloud-config/) {
             $data = CPAN::Meta::YAML->read_string($data)->[0];
             apply_user_data $data;
         } elsif ($data =~ /^#\!/) {
+            set_hostname(get_default_fqdn);
+            add_etc_hosts_entry(get_default_fqdn);
+
             my ($fh, $filename) = tempfile("/tmp/cloud-config-XXXXXX");
             print $fh $data;
             chmod(0700, $fh);
             close $fh;
             system("sh -c \"$filename && rm $filename\"");
         }
+    } else {
+        set_hostname(get_default_fqdn);
+        add_etc_hosts_entry(get_default_fqdn);
     }
 }
 
