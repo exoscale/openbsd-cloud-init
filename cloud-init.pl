@@ -146,18 +146,16 @@ sub cloud_init {
     chomp($pubkeys);
     install_pubkeys $pubkeys;
 
-    if (defined($data)) {
-        if ($data =~ /^#cloud-config/) {
-            $data = CPAN::Meta::YAML->read_string($data)->[0];
-            apply_user_data $data;
-        } elsif ($data =~ /^#\!/) {
-            set_hostname(get_default_fqdn);
-            add_etc_hosts_entry(get_default_fqdn);
-            run_user_script($data);
-        }
+    if ($data =~ /^#cloud-config/) {
+        $data = CPAN::Meta::YAML->read_string($data)->[0];
+        apply_user_data($data);
     } else {
         set_hostname(get_default_fqdn);
         add_etc_hosts_entry(get_default_fqdn);
+
+        if ($data =~ /^#\!/) {
+            run_user_script($data);
+        }
     }
 }
 
