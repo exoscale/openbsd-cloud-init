@@ -17,7 +17,7 @@ as possible by default. The following actions are currently supported:
 
 - SSH [authorized_keys](http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man8/sshd.8?query=sshd&sec=8) personalization if requested.
 - Persistent hostname personalization if requested.
-- Local host resolution personalization if requested.
+- Local host resolution personalization unless requested otherwise.
 - Optional custom script execution.
 - Packages installation (pkg_add) support.
 - Custom commands (runcmd) execution.

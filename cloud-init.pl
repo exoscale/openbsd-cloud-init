@@ -57,6 +57,15 @@ sub set_hostname {
   system("hostname " . $fqdn);
 }
 
+sub add_etc_hosts_entry {
+    my $fqdn = shift;
+    my ($shortname) = split(/\./, $fqdn);
+
+    open my $fh, ">>", "/etc/hosts";
+    printf $fh "127.0.1.1       %s %s\n", $shortname, $fqdn;
+    close $fh;
+}
+
 sub install_pubkeys {
   my $pubkeys = shift;
 
@@ -70,18 +79,14 @@ sub install_pubkeys {
 sub apply_user_data {
   my $data = shift;
 
-  if (defined($data->{fqdn})) {
-    set_hostname $data->{fqdn};
-  }
+  my $fqdn = $data->{fqdn} // get_default_fqdn;
 
-  if (defined($data->{manage_etc_hosts}) &&
-      ($data->{manage_etc_hosts} eq 'true' ||
-       $data->{manage_etc_hosts} eq 'localhost')) {
-    open my $fh, ">>", "/etc/hosts";
-    my $fqdn = $data->{fqdn} // get_default_fqdn;
-    my ($shortname) = split(/\./, $fqdn);
-    printf $fh "127.0.1.1       %s %s\n", $shortname, $fqdn;
-    close $fh;
+  set_hostname($fqdn);
+
+  if (!defined($data->{manage_etc_hosts}) ||
+      $data->{manage_etc_hosts} eq 'true' ||
+      $data->{manage_etc_hosts} eq 'localhost') {
+    add_etc_hosts_entry($fqdn);
   }
 
   if (defined($data->{ssh_authorized_keys})) {
@@ -120,6 +125,16 @@ sub apply_user_data {
   }
 }
 
+sub run_user_script {
+    my $data = shift;
+
+    my ($fh, $filename) = tempfile("/tmp/cloud-config-XXXXXX");
+    print $fh $data;
+    chmod(0700, $fh);
+    close $fh;
+    system("sh -c \"$filename && rm $filename\"");
+}
+
 sub cloud_init {
     my $host = METADATA_HOST;
 
@@ -130,18 +145,16 @@ sub cloud_init {
     my $pubkeys = get_data($host, 'meta-data/public-keys');
     chomp($pubkeys);
     install_pubkeys $pubkeys;
-    set_hostname get_default_fqdn;
 
-    if (defined($data)) {
-        if ($data =~ /^#cloud-config/) {
-            $data = CPAN::Meta::YAML->read_string($data)->[0];
-            apply_user_data $data;
-        } elsif ($data =~ /^#\!/) {
-            my ($fh, $filename) = tempfile("/tmp/cloud-config-XXXXXX");
-            print $fh $data;
-            chmod(0700, $fh);
-            close $fh;
-            system("sh -c \"$filename && rm $filename\"");
+    if ($data =~ /^#cloud-config/) {
+        $data = CPAN::Meta::YAML->read_string($data)->[0];
+        apply_user_data($data);
+    } else {
+        set_hostname(get_default_fqdn);
+        add_etc_hosts_entry(get_default_fqdn);
+
+        if ($data =~ /^#\!/) {
+            run_user_script($data);
         }
     }
 }
