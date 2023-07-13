@@ -54,7 +54,7 @@ sub set_hostname {
   open my $fh, ">", "/etc/myname";
   printf $fh "%s\n", $fqdn;
   close $fh;
-  system("hostname " . $fqdn);
+  system("/bin/hostname", $fqdn);
 }
 
 sub add_etc_hosts_entry {
@@ -95,7 +95,7 @@ sub apply_user_data {
 
   if (defined($data->{packages})) {
     foreach my $package (@{ $data->{packages} }) {
-      system("pkg_add " . $package);
+      system("pkg_add", $package);
     }
   }
 
@@ -120,7 +120,7 @@ sub apply_user_data {
 
   if (defined($data->{runcmd})) {
     foreach my $runcmd (@{ $data->{runcmd} }) {
-      system("sh -c \"$runcmd\"");
+      system("/bin/sh", "-c", $runcmd);
     }
   }
 }
@@ -180,7 +180,7 @@ EOF
     unlink "/etc/isakmpd/local.pub";
 
     #-- remove cruft
-    unlink "/tmp/*";
+    unlink glob "/tmp/*";
     unlink "/var/db/dhclient.leases.vio0";
 
     #-- disable root password
